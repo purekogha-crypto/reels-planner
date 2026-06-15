@@ -18,6 +18,7 @@ const App = {
     this.initTimePicker();
     this.initDayPicker();
     this.showQuote();
+    this.checkWeeklyTrends();
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
@@ -125,17 +126,19 @@ const App = {
 
   renderIdeas(ideas) {
     const container = document.getElementById('ideas-container');
-    container.innerHTML = ideas.map(idea => `
+    container.innerHTML = ideas.map(idea => {
+      const aiBadge = idea.source === 'ai' ? '<span class="ai-badge">🤖 AI</span>' : '';
+      return `
       <div class="idea-card" data-id="${idea.id}">
-        <div class="format-badge">${idea.format.icon} ${idea.format.name}</div>
+        <div class="format-badge">${idea.format.icon} ${idea.format.name} ${aiBadge}</div>
         <div class="idea-title">${idea.topic}</div>
         ${idea.location ? `<div class="idea-desc">📍 ${idea.location}</div>` : ''}
         <div class="idea-actions">
           <button class="btn-save" onclick="App.saveIdea(${idea.id})">Снять!</button>
           <button class="btn-dismiss" onclick="App.dismissIdea(${idea.id})">Пропустить</button>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   },
 
   saveIdea(id) {
@@ -480,6 +483,88 @@ const App = {
       <div class="stat-card"><div class="stat-number">${skipped}</div><div class="stat-label">Пропущено</div></div>
       <div class="stat-card"><div class="stat-number">${streak}</div><div class="stat-label">Дней подряд 🔥</div></div>
     `;
+  },
+
+  /* ===== WEEKLY TRENDS ===== */
+  async checkWeeklyTrends() {
+    const { settings } = this.state;
+    const lastCheck = localStorage.getItem('rp_trends_last_check');
+    const now = Date.now();
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+
+    if (lastCheck && (now - parseInt(lastCheck)) < weekMs) {
+      const cached = JSON.parse(localStorage.getItem('rp_weekly_trends') || '[]');
+      if (cached.length) this.renderTrends(cached);
+      return;
+    }
+
+    if (!settings.aiProvider || settings.aiProvider === 'none' || !settings.apiKey || !settings.profile) return;
+
+    try {
+      const trends = await AI.generateTrends(settings.profile, settings.aiProvider, settings.apiKey);
+      localStorage.setItem('rp_weekly_trends', JSON.stringify(trends));
+      localStorage.setItem('rp_trends_last_check', now.toString());
+      this.renderTrends(trends);
+    } catch (e) {
+      console.error('Trends error:', e);
+    }
+  },
+
+  renderTrends(trends) {
+    const container = document.getElementById('trends-container');
+    const list = document.getElementById('trends-list');
+    if (!trends.length) { container.style.display = 'none'; return; }
+    container.style.display = '';
+
+    list.innerHTML = trends.map((t, i) => `
+      <div class="trend-card" data-index="${i}">
+        <div class="trend-tag">📈 Тренд</div>
+        <div class="trend-name">${t.name}</div>
+        <div class="trend-desc">${t.description}</div>
+        <div class="idea-actions">
+          <button class="btn-save" onclick="App.saveTrend(${i})">Снять!</button>
+          <button class="btn-dismiss" onclick="App.dismissTrend(${i})">Пропустить</button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  saveTrend(index) {
+    const trends = JSON.parse(localStorage.getItem('rp_weekly_trends') || '[]');
+    const trend = trends[index];
+    if (!trend) return;
+    const idea = {
+      id: Date.now(),
+      topic: trend.name,
+      format: { id: 'trend', name: 'Тренд', icon: '📈', desc: trend.description },
+      location: trend.location || '',
+      concept: trend.how_to || '',
+      source: 'ai_trend',
+      created: new Date().toISOString(),
+      status: 'planned'
+    };
+    this.state.history.unshift(idea);
+    this.saveLocal();
+    this._showToast('Тренд добавлен в запланированные');
+  },
+
+  dismissTrend(index) {
+    const trends = JSON.parse(localStorage.getItem('rp_weekly_trends') || '[]');
+    const trend = trends[index];
+    if (!trend) return;
+    const idea = {
+      id: Date.now(),
+      topic: trend.name,
+      format: { id: 'trend', name: 'Тренд', icon: '📈', desc: trend.description },
+      location: trend.location || '',
+      concept: trend.how_to || '',
+      source: 'ai_trend',
+      created: new Date().toISOString(),
+      status: 'skipped'
+    };
+    this.state.history.unshift(idea);
+    this.saveLocal();
+    this._showToast('Тренд пропущен');
   },
 
   _showToast(msg) {

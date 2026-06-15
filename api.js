@@ -22,6 +22,63 @@ const AI = {
     throw new Error('Unknown provider');
   },
 
+  async generateTrends(profile, provider, apiKey) {
+    const prompt = `Ты — аналитик Instagram Reels. Пользователь работает в нише: "${profile}".
+Найди 3 актуальных тренда Instagram Reels на эту неделю (сейчас 2025 год).
+Для каждого тренда укажи:
+1. name — название тренда
+2. description — что это за тренд и почему он популярный
+3. location — где лучше снимать
+4. how_to — как использовать этот тренд (конкретные шаги)
+
+Ответ СТРОГО в JSON массиве:
+[{"name":"...","description":"...","location":"...","how_to":"..."}]`;
+
+    if (provider === 'gemini') return this._parseTrends(await this._callGeminiRaw(prompt, apiKey));
+    if (provider === 'openai') return this._parseTrends(await this._callOpenAIRaw(prompt, apiKey));
+    if (provider === 'claude') return this._parseTrends(await this._callClaudeRaw(prompt, apiKey));
+    return [];
+  },
+
+  async _callGeminiRaw(prompt, apiKey) {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.candidates[0].content.parts[0].text;
+  },
+
+  async _callOpenAIRaw(prompt, apiKey) {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.9 })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices[0].message.content;
+  },
+
+  async _callClaudeRaw(prompt, apiKey) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.content[0].text;
+  },
+
+  _parseTrends(text) {
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) return [];
+    try { return JSON.parse(match[0]); } catch { return []; }
+  },
+
   async _callGemini(prompt, apiKey) {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
