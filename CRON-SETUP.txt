@@ -1,0 +1,21 @@
+#!/bin/bash
+# Cron-job.org настройка для Reels Planner
+# Зарегистрируйся на https://cron-job.org
+# Создай новую задачу (Job) с параметрами ниже:
+
+# === НАСТРОЙКИ ===
+# Тип: POST
+# URL: https://api.telegram.org/bot8120281989:AAG3GaKrQlAAPedaA8Ub6XGVdm7cLEwRgYs/sendMessage
+
+# Headers:
+# Content-Type: application/json
+
+# Body (JSON):
+# {
+#   "chat_id": "985455014",
+#   "text": "🎬 Время снять новый Reels!\n\nОткройте Reels Planner и получите свежие идеи для контента.",
+#   "parse_mode": "HTML"
+# }
+
+# Расписание: настрой нужные дни и время (МСК)
+# Например: каждый понедельник, среду, пятницу в 10:00 МСК (07:00 UTC)

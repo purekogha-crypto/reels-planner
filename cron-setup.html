@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cron Setup - Reels Planner</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #FDF4E3; color: #262626; }
+    h1 { font-size: 20px; margin-bottom: 16px; }
+    h2 { font-size: 16px; margin-top: 24px; color: #E1306C; }
+    .field { margin: 12px 0; }
+    .field label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; color: #8E8E8E; }
+    .field pre { background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #DBDBDB; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+    .copy-btn { margin-top: 4px; padding: 6px 12px; border: none; border-radius: 6px; background: #E1306C; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .copy-btn:active { opacity: 0.7; }
+    .step { background: #fff; padding: 16px; border-radius: 12px; margin: 12px 0; border: 1px solid #DBDBDB; }
+    .step-num { display: inline-block; width: 24px; height: 24px; border-radius: 50%; background: #E1306C; color: #fff; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700; margin-right: 8px; }
+    a { color: #833AB4; }
+  </style>
+</head>
+<body>
+  <h1>Настройка cron-job.org</h1>
+
+  <div class="step">
+    <span class="step-num">1</span>
+    Зарегистрируйся на <a href="https://cron-job.org" target="_blank">cron-job.org</a>
+  </div>
+
+  <div class="step">
+    <span class="step-num">2</span>
+    Нажми <b>Create Cron Job</b>
+  </div>
+
+  <div class="step">
+    <span class="step-num">3</span>
+    Заполни поля ниже:
+  </div>
+
+  <div class="field">
+    <label>Request URL</label>
+    <pre>https://api.telegram.org/bot8120281989:AAG3GaKrQlAAPedaA8Ub6XGVdm7cLEwRgYs/sendMessage</pre>
+    <button class="copy-btn" onclick="copy(this)">Копировать</button>
+  </div>
+
+  <div class="field">
+    <label>Request Method</label>
+    <pre>POST</pre>
+  </div>
+
+  <div class="field">
+    <label>Request Headers</label>
+    <pre>Content-Type: application/json</pre>
+    <button class="copy-btn" onclick="copy(this)">Копировать</button>
+  </div>
+
+  <div class="field">
+    <label>Request Body (JSON)</label>
+    <pre>{"chat_id":"985455014","text":"🎬 Время снять новый Reels!\n\nОткройте Reels Planner и получите свежие идеи для контента.","parse_mode":"HTML"}</pre>
+    <button class="copy-btn" onclick="copy(this)">Копировать</button>
+  </div>
+
+  <div class="step">
+    <span class="step-num">4</span>
+    В <b>Schedule</b> выбери нужные дни и время.
+    <br>Время на cron-job.org указывается в <b>UTC</b>.
+    <br>МСК = UTC+3, значит 10:00 МСК = 07:00 UTC.
+  </div>
+
+  <div class="step">
+    <span class="step-num">5</span>
+    Нажми <b>Create</b> и включи задачу (Enable)
+  </div>
+
+  <script>
+    function copy(btn) {
+      const text = btn.previousElementSibling.textContent;
+      navigator.clipboard.writeText(text);
+      btn.textContent = 'Скопировано!';
+      setTimeout(() => btn.textContent = 'Копировать', 1500);
+    }
+  </script>
+</body>
+</html>
