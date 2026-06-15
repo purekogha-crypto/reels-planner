@@ -271,21 +271,19 @@ const App = {
   },
 
   _scrollTimePickerToSaved() {
-    const hoursWheel = document.getElementById('wheel-hours');
-    const minutesWheel = document.getElementById('wheel-minutes');
-    if (!hoursWheel || !minutesWheel) return;
-    const savedH = this.state.settings.reminderHour ?? 10;
-    const savedM = this.state.settings.reminderMinute ?? 0;
-    setTimeout(() => {
-      hoursWheel.style.scrollSnapType = 'none';
-      minutesWheel.style.scrollSnapType = 'none';
-      hoursWheel.scrollTop = (savedH + 24) * 40 - 30;
-      minutesWheel.scrollTop = (savedM + 60) * 40 - 30;
-      requestAnimationFrame(() => {
-        hoursWheel.style.scrollSnapType = '';
-        minutesWheel.style.scrollSnapType = '';
-      });
-    }, 100);
+    const h = document.getElementById('wheel-hours');
+    const m = document.getElementById('wheel-minutes');
+    if (!h || !m) return;
+    const savedH = this.state.settings.reminderHour;
+    const savedM = this.state.settings.reminderMinute;
+    if (savedH == null && savedM == null) return;
+    const doScroll = () => {
+      h.scrollTop = ((savedH ?? 10) + 24) * 40;
+      m.scrollTop = ((savedM ?? 0) + 60) * 40;
+    };
+    setTimeout(doScroll, 50);
+    setTimeout(doScroll, 200);
+    setTimeout(doScroll, 500);
   },
 
   /* ===== TIME PICKER ===== */
@@ -320,13 +318,10 @@ const App = {
     }
 
     const scrollToSaved = (wheel, value) => {
-      setTimeout(() => {
-        wheel.style.scrollSnapType = 'none';
-        wheel.scrollTop = (value + 24) * 40 - 30;
-        requestAnimationFrame(() => {
-          wheel.style.scrollSnapType = '';
-        });
-      }, 100);
+      const doScroll = () => { wheel.scrollTop = (value + 24) * 40; };
+      setTimeout(doScroll, 50);
+      setTimeout(doScroll, 200);
+      setTimeout(doScroll, 500);
     };
 
     scrollToSaved(hoursWheel, savedH);
