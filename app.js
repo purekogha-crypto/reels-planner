@@ -4,7 +4,9 @@ const App = {
     settings: {},
     ideas: [],
     history: [],
-    showingIdeas: false
+    showingIdeas: false,
+    telegramChatId: '',
+    telegramToken: ''
   },
 
   init() {
