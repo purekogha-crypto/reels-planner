@@ -121,6 +121,10 @@ const server = http.createServer((req, res) => {
         url = 'https://api.anthropic.com/v1/messages';
         headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
         data = JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] });
+      } else if (provider === 'groq') {
+        url = 'https://api.groq.com/openai/v1/chat/completions';
+        headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+        data = JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: prompt }], temperature: 0.9, max_tokens: 1024 });
       } else {
         res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         return res.end(JSON.stringify({ error: 'Unknown provider' }));
