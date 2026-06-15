@@ -66,6 +66,7 @@ const App = {
         this.state.currentScreen = screen;
         if (screen === 'history') this.renderHistory();
         if (screen === 'stats') this.renderStats();
+        if (screen === 'settings') this._scrollTimePickerToSaved();
       });
     });
   },
@@ -267,6 +268,18 @@ const App = {
   toggleDetails(id) {
     const item = document.querySelector(`.history-item[data-id="${id}"]`);
     if (item) item.classList.toggle('expanded');
+  },
+
+  _scrollTimePickerToSaved() {
+    const hoursWheel = document.getElementById('wheel-hours');
+    const minutesWheel = document.getElementById('wheel-minutes');
+    if (!hoursWheel || !minutesWheel) return;
+    requestAnimationFrame(() => {
+      const selH = hoursWheel.querySelector('.time-option.selected');
+      const selM = minutesWheel.querySelector('.time-option.selected');
+      if (selH) selH.scrollIntoView({ block: 'center', behavior: 'instant' });
+      if (selM) selM.scrollIntoView({ block: 'center', behavior: 'instant' });
+    });
   },
 
   /* ===== TIME PICKER ===== */

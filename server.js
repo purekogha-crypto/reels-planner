@@ -102,6 +102,48 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.url === '/api/ai' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      const { provider, apiKey, prompt } = JSON.parse(body);
+      let url, headers, data;
+
+      if (provider === 'gemini') {
+        url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        headers = { 'Content-Type': 'application/json' };
+        data = JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] });
+      } else if (provider === 'openai') {
+        url = 'https://api.openai.com/v1/chat/completions';
+        headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+        data = JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.9 });
+      } else if (provider === 'claude') {
+        url = 'https://api.anthropic.com/v1/messages';
+        headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
+        data = JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] });
+      } else {
+        res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        return res.end(JSON.stringify({ error: 'Unknown provider' }));
+      }
+
+      const proxyReq = https.request(url, { method: 'POST', headers }, (proxyRes) => {
+        let d = '';
+        proxyRes.on('data', c => d += c);
+        proxyRes.on('end', () => {
+          res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(d);
+        });
+      });
+      proxyReq.on('error', (e) => {
+        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ error: e.message }));
+      });
+      proxyReq.write(data);
+      proxyReq.end();
+    });
+    return;
+  }
+
   let url = req.url === '/' ? '/index.html' : req.url.split('?')[0];
   const file = path.join(dir, url);
   const ext = path.extname(file);
