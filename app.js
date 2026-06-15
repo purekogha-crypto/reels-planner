@@ -276,10 +276,16 @@ const App = {
     if (!hoursWheel || !minutesWheel) return;
     const savedH = this.state.settings.reminderHour ?? 10;
     const savedM = this.state.settings.reminderMinute ?? 0;
-    requestAnimationFrame(() => {
-      hoursWheel.scrollTop = (savedH + 24) * 40;
-      minutesWheel.scrollTop = (savedM + 60) * 40;
-    });
+    setTimeout(() => {
+      hoursWheel.style.scrollSnapType = 'none';
+      minutesWheel.style.scrollSnapType = 'none';
+      hoursWheel.scrollTop = (savedH + 24) * 40 - 30;
+      minutesWheel.scrollTop = (savedM + 60) * 40 - 30;
+      requestAnimationFrame(() => {
+        hoursWheel.style.scrollSnapType = '';
+        minutesWheel.style.scrollSnapType = '';
+      });
+    }, 100);
   },
 
   /* ===== TIME PICKER ===== */
@@ -314,9 +320,13 @@ const App = {
     }
 
     const scrollToSaved = (wheel, value) => {
-      requestAnimationFrame(() => {
-        wheel.scrollTop = (value + 24) * 40;
-      });
+      setTimeout(() => {
+        wheel.style.scrollSnapType = 'none';
+        wheel.scrollTop = (value + 24) * 40 - 30;
+        requestAnimationFrame(() => {
+          wheel.style.scrollSnapType = '';
+        });
+      }, 100);
     };
 
     scrollToSaved(hoursWheel, savedH);
