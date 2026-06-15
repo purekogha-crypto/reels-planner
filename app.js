@@ -10,7 +10,6 @@ const App = {
   init() {
     this.loadLocal();
     this.loadConfig();
-    Telegram.init();
     this.setupNav();
     this.setupSettings();
     this.setupHome();
