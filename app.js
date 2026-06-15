@@ -400,6 +400,19 @@ const App = {
       this._showToast('Настройки сохранены!');
     });
 
+    document.getElementById('btn-test-bot').addEventListener('click', async () => {
+      if (!this.state.telegramToken || !this.state.telegramChatId) {
+        this._showToast('Заполни токен и Chat ID');
+        return;
+      }
+      const result = await Telegram.testConnection(this.state.telegramToken, this.state.telegramChatId);
+      if (result.ok) {
+        this._showToast('Проверь Telegram!');
+      } else {
+        this._showToast('Ошибка: ' + result.description);
+      }
+    });
+
     this._populateSettings();
   },
 
