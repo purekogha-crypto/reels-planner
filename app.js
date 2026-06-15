@@ -92,17 +92,27 @@ const App = {
     container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
     const { settings } = this.state;
-    let ideas;
+    let ideas = [];
+    const customDb = JSON.parse(localStorage.getItem('rp_custom_ideas') || '[]');
 
     if (settings.aiProvider && settings.aiProvider !== 'none' && settings.apiKey && settings.profile) {
       try {
-        ideas = await AI.generateIdeas(settings.profile, settings.aiProvider, settings.apiKey);
+        const existingTopics = customDb.map(i => i.topic).concat(IDEAS_DB.topics.map(t => t.topic));
+        ideas = await AI.generateIdeas(settings.profile, settings.aiProvider, settings.apiKey, 4, existingTopics);
+        ideas.forEach(idea => {
+          if (!customDb.some(c => c.topic === idea.topic)) {
+            customDb.push({ topic: idea.topic, format: idea.format.name, location: idea.location || '', concept: idea.concept || '' });
+          }
+        });
+        localStorage.setItem('rp_custom_ideas', JSON.stringify(customDb));
       } catch (e) {
         console.error('AI error:', e);
-        ideas = IDEAS_DB.getRandomIdeas();
       }
-    } else {
-      ideas = IDEAS_DB.getRandomIdeas();
+    }
+
+    if (ideas.length < 4) {
+      const dbIdeas = IDEAS_DB.getRandomIdeas(4 - ideas.length);
+      ideas = ideas.concat(dbIdeas);
     }
 
     this.state.ideas = ideas;

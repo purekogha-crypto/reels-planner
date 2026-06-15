@@ -1,13 +1,20 @@
 const AI = {
-  async generateIdeas(profile, provider, apiKey, count = 4) {
+  async generateIdeas(profile, provider, apiKey, count = 4, existingTopics = []) {
+    const avoidList = existingTopics.length > 5 ? existingTopics.slice(0, 20).join(', ') : '';
     const prompt = `Ты — креативный директор Instagram Reels. Пользователь описал себя так: "${profile}".
-Сгенерируй ${count} идей для Reels. Каждая идея должна содержать:
-1. Тему (конкретную, не общую)
-2. Формат из списка: тренд, обучающий, сторителлинг, behind-the-scenes, POV, до/после, коллаборация, timelapse, обзор, челлендж
-3. Краткое описание (1-2 предложения)
+Сгенерируй ${count} ОРИГИНАЛЬНЫХ идей для Reels.
 
-Ответ СТРОГО в JSON массиве:
-[{"topic": "...", "format": "тренд", "description": "..."}]`;
+Избегай этих тем (они уже были): ${avoidList}
+
+Каждая идея должна содержать:
+1. topic — конкретная тема (не общая, а конкретная ситуация/история)
+2. format — один из: тренд, обучающий, сторителлинг, behind-the-scenes, POV, до/после, коллаборация, timelapse, обзор, челлендж
+3. description — краткое описание 1-2 предложения
+4. location — где снимать (конкретное место)
+5. concept — концепция ролика (что показать, как подать, структура)
+
+Ответ СТРОГО в JSON массиве, без дополнительного текста:
+[{"topic":"...","format":"...","description":"...","location":"...","concept":"..."}]`;
 
     if (provider === 'gemini') return this._callGemini(prompt, apiKey);
     if (provider === 'openai') return this._callOpenAI(prompt, apiKey);
@@ -22,6 +29,7 @@ const AI = {
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
     const text = data.candidates[0].content.parts[0].text;
     return this._parseResponse(text);
   },
@@ -37,6 +45,7 @@ const AI = {
       })
     });
     const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
     return this._parseResponse(data.choices[0].message.content);
   },
 
@@ -51,6 +60,7 @@ const AI = {
       })
     });
     const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
     return this._parseResponse(data.content[0].text);
   },
 
@@ -58,13 +68,24 @@ const AI = {
     const match = text.match(/\[[\s\S]*\]/);
     if (!match) throw new Error('AI response is not valid JSON');
     const ideas = JSON.parse(match[0]);
-    return ideas.map((idea, i) => ({
-      id: Date.now() + i,
-      topic: idea.topic,
-      format: { id: idea.format.toLowerCase(), name: idea.format, icon: '🤖', desc: idea.description || '' },
-      source: 'ai',
-      created: new Date().toISOString(),
-      status: 'pending'
-    }));
+    const fmtMap = { 'тренд': 'trend', 'обучающий': 'tutorial', 'сторителлинг': 'storytelling',
+      'behind-the-scenes': 'bts', 'pov': 'pov', 'до/после': 'before_after',
+      'коллаборация': 'collab', 'timelapse': 'timelapse', 'обзор': 'review', 'челлендж': 'challenge' };
+    const iconMap = { trend: '🔥', tutorial: '📚', storytelling: '📖', bts: '🎬', pov: '👀',
+      before_after: '✨', collab: '🤝', timelapse: '⏱️', review: '⭐', challenge: '🏆' };
+
+    return ideas.map((idea, i) => {
+      const fmtId = fmtMap[idea.format?.toLowerCase()] || 'trend';
+      return {
+        id: Date.now() + i,
+        topic: idea.topic,
+        format: { id: fmtId, name: idea.format, icon: iconMap[fmtId] || '🤖', desc: idea.description || '' },
+        location: idea.location || '',
+        concept: idea.concept || '',
+        source: 'ai',
+        created: new Date().toISOString(),
+        status: 'pending'
+      };
+    });
   }
 };
