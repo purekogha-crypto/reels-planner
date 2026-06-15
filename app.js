@@ -294,6 +294,7 @@ const App = {
 
     const savedH = this.state.settings.reminderHour ?? 10;
     const savedM = this.state.settings.reminderMinute ?? 0;
+    console.log('Time picker init:', { savedH, savedM, fullSettings: this.state.settings });
 
     const pad = (n) => String(n).padStart(2, '0');
 
@@ -423,6 +424,7 @@ const App = {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const time = this._getSelectedTime();
+      console.log('Saving time:', time);
       const filmDays = this._getSelectedDays();
       this.state.settings = {
         profile: document.getElementById('setting-profile').value,
@@ -432,6 +434,7 @@ const App = {
         reminderHour: time.hour,
         reminderMinute: time.minute
       };
+      console.log('Full settings:', this.state.settings);
       this.saveLocal();
 
       if (this.state.telegramChatId) {
