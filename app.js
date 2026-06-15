@@ -17,7 +17,6 @@ const App = {
     this.initTimePicker();
     this.initDayPicker();
     this.showQuote();
-    this.restoreReminder();
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
@@ -385,32 +384,37 @@ const App = {
       apiKeyInput.classList.toggle('hidden', provider.value === 'none');
     });
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const time = this._getSelectedTime();
+      const filmDays = this._getSelectedDays();
       this.state.settings = {
         profile: document.getElementById('setting-profile').value,
-        filmDays: this._getSelectedDays(),
+        filmDays,
         aiProvider: provider.value,
         apiKey: apiKeyInput.value,
         reminderHour: time.hour,
         reminderMinute: time.minute
       };
       this.saveLocal();
-      this.setupReminders();
+
+      if (this.state.telegramChatId) {
+        await Telegram.saveSchedule(this.state.telegramChatId, filmDays, time.hour, time.minute);
+      }
+
       this._showToast('Настройки сохранены!');
     });
 
     document.getElementById('btn-test-bot').addEventListener('click', async () => {
-      if (!this.state.telegramToken || !this.state.telegramChatId) {
-        this._showToast('Заполни токен и Chat ID');
+      if (!this.state.telegramChatId) {
+        this._showToast('Chat ID не задан');
         return;
       }
-      const result = await Telegram.testConnection(this.state.telegramToken, this.state.telegramChatId);
+      const result = await Telegram.testConnection(this.state.telegramChatId);
       if (result.ok) {
         this._showToast('Проверь Telegram!');
       } else {
-        this._showToast('Ошибка: ' + result.description);
+        this._showToast('Ошибка: ' + (result.description || 'неизвестно'));
       }
     });
 
