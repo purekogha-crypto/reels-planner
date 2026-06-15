@@ -1,11 +1,28 @@
 const Telegram = {
-  baseUrl(token) { return `https://api.telegram.org/bot${token}`; },
+  _proxyUrl: '',
+
+  init() {
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      this._proxyUrl = '/api/telegram';
+    }
+  },
 
   async sendMessage(token, chatId, text) {
-    const res = await fetch(`${this.baseUrl(token)}/sendMessage`, {
+    const body = { chat_id: chatId, text, parse_mode: 'HTML' };
+
+    if (this._proxyUrl) {
+      const res = await fetch(this._proxyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, method: 'sendMessage', body })
+      });
+      return res.json();
+    }
+
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })
+      body: JSON.stringify(body)
     });
     return res.json();
   },
