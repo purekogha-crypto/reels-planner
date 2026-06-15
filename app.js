@@ -100,6 +100,7 @@ const App = {
       try {
         const existingTopics = customDb.map(i => i.topic).concat(IDEAS_DB.topics.map(t => t.topic));
         ideas = await AI.generateIdeas(settings.profile, settings.aiProvider, settings.apiKey, 4, existingTopics);
+        console.log('AI ideas generated:', ideas.length, ideas.map(i => i.source));
         ideas.forEach(idea => {
           if (!customDb.some(c => c.topic === idea.topic)) {
             customDb.push({ topic: idea.topic, format: idea.format.name, location: idea.location || '', concept: idea.concept || '' });
@@ -108,7 +109,10 @@ const App = {
         localStorage.setItem('rp_custom_ideas', JSON.stringify(customDb));
       } catch (e) {
         console.error('AI error:', e);
+        this._showToast('Ошибка AI: ' + e.message);
       }
+    } else {
+      console.log('AI not configured:', { provider: settings.aiProvider, hasKey: !!settings.apiKey, hasProfile: !!settings.profile });
     }
 
     if (ideas.length < 4) {
@@ -296,14 +300,15 @@ const App = {
       }
     }
 
-    const scrollToMiddle = (wheel) => {
-      const options = wheel.querySelectorAll('.time-option');
-      const mid = Math.floor(options.length / 2);
-      if (options[mid]) options[mid].scrollIntoView({ block: 'center', behavior: 'instant' });
+    const scrollToSelected = (wheel) => {
+      const sel = wheel.querySelector('.time-option.selected');
+      if (sel) {
+        setTimeout(() => sel.scrollIntoView({ block: 'center', behavior: 'instant' }), 50);
+      }
     };
 
-    scrollToMiddle(hoursWheel);
-    scrollToMiddle(minutesWheel);
+    scrollToSelected(hoursWheel);
+    scrollToSelected(minutesWheel);
 
     const onScroll = (wheel) => {
       const options = wheel.querySelectorAll('.time-option');
