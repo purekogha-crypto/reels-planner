@@ -15,7 +15,6 @@ const App = {
     this.setupNav();
     this.setupSettings();
     this.setupHome();
-    this.initTimePicker();
     this.initDayPicker();
     this.showQuote();
     this.checkWeeklyTrends();
@@ -270,115 +269,7 @@ const App = {
     if (item) item.classList.toggle('expanded');
   },
 
-  _scrollTimePickerToSaved() {
-    const h = document.getElementById('wheel-hours');
-    const m = document.getElementById('wheel-minutes');
-    if (!h || !m) return;
-    const savedH = this.state.settings.reminderHour;
-    const savedM = this.state.settings.reminderMinute;
-    if (savedH == null && savedM == null) return;
-    const doScroll = () => {
-      h.scrollTop = ((savedH ?? 10) + 24) * 40;
-      m.scrollTop = ((savedM ?? 0) + 60) * 40;
-    };
-    setTimeout(doScroll, 50);
-    setTimeout(doScroll, 200);
-    setTimeout(doScroll, 500);
-  },
-
-  /* ===== TIME PICKER ===== */
-  initTimePicker() {
-    const hoursWheel = document.getElementById('wheel-hours');
-    const minutesWheel = document.getElementById('wheel-minutes');
-    if (!hoursWheel || !minutesWheel) return;
-
-    const savedH = this.state.settings.reminderHour ?? 10;
-    const savedM = this.state.settings.reminderMinute ?? 0;
-    console.log('Time picker init:', { savedH, savedM, fullSettings: this.state.settings });
-
-    const pad = (n) => String(n).padStart(2, '0');
-
-    for (let i = 0; i < 3; i++) {
-      for (let h = 0; h < 24; h++) {
-        const opt = document.createElement('div');
-        opt.className = 'time-option' + (h === savedH && i === 1 ? ' selected' : '');
-        opt.textContent = pad(h);
-        opt.dataset.value = h;
-        hoursWheel.appendChild(opt);
-      }
-    }
-
-    for (let i = 0; i < 3; i++) {
-      for (let m = 0; m < 60; m++) {
-        const opt = document.createElement('div');
-        opt.className = 'time-option' + (m === savedM && i === 1 ? ' selected' : '');
-        opt.textContent = pad(m);
-        opt.dataset.value = m;
-        minutesWheel.appendChild(opt);
-      }
-    }
-
-    const scrollToSaved = (wheel, value) => {
-      const doScroll = () => { wheel.scrollTop = (value + 24) * 40; };
-      setTimeout(doScroll, 50);
-      setTimeout(doScroll, 200);
-      setTimeout(doScroll, 500);
-    };
-
-    scrollToSaved(hoursWheel, savedH);
-    scrollToSaved(minutesWheel, savedM);
-
-    const onScroll = (wheel) => {
-      const options = wheel.querySelectorAll('.time-option');
-      const wheelRect = wheel.getBoundingClientRect();
-      const centerY = wheelRect.top + wheelRect.height / 2;
-      let closest = null;
-      let minDist = Infinity;
-      options.forEach(opt => {
-        const rect = opt.getBoundingClientRect();
-        const dist = Math.abs(rect.top + rect.height / 2 - centerY);
-        if (dist < minDist) { minDist = dist; closest = opt; }
-      });
-      if (closest) {
-        options.forEach(o => o.classList.remove('selected'));
-        closest.classList.add('selected');
-      }
-    };
-
-    const handleInfiniteScroll = (wheel) => {
-      const options = wheel.querySelectorAll('.time-option');
-      const third = options.length / 3;
-      const scrollTop = wheel.scrollTop;
-      const scrollHeight = wheel.scrollHeight;
-      const clientHeight = wheel.clientHeight;
-
-      if (scrollTop < clientHeight * 0.5) {
-        wheel.scrollTop = scrollTop + third * 40;
-      } else if (scrollTop > scrollHeight - clientHeight * 1.5) {
-        wheel.scrollTop = scrollTop - third * 40;
-      }
-    };
-
-    hoursWheel.addEventListener('click', (e) => {
-      const opt = e.target.closest('.time-option');
-      if (opt) opt.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    });
-
-    minutesWheel.addEventListener('click', (e) => {
-      const opt = e.target.closest('.time-option');
-      if (opt) opt.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    });
-
-    let scrollTimeout;
-    hoursWheel.addEventListener('scroll', () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => { onScroll(hoursWheel); handleInfiniteScroll(hoursWheel); }, 80);
-    });
-    minutesWheel.addEventListener('scroll', () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => { onScroll(minutesWheel); handleInfiniteScroll(minutesWheel); }, 80);
-    });
-  },
+  _scrollTimePickerToSaved() {},
 
   /* ===== DAY PICKER ===== */
   initDayPicker() {
@@ -403,12 +294,9 @@ const App = {
   },
 
   _getSelectedTime() {
-    const h = document.querySelector('#wheel-hours .selected');
-    const m = document.querySelector('#wheel-minutes .selected');
-    return {
-      hour: h ? parseInt(h.dataset.value) : 10,
-      minute: m ? parseInt(m.dataset.value) : 0
-    };
+    const val = document.getElementById('setting-time')?.value || '10:00';
+    const [h, m] = val.split(':').map(Number);
+    return { hour: h || 10, minute: m || 0 };
   },
 
   /* ===== SETTINGS ===== */
@@ -465,6 +353,11 @@ const App = {
     if (s.profile) document.getElementById('setting-profile').value = s.profile;
     if (s.aiProvider) document.getElementById('setting-ai-provider').value = s.aiProvider;
     if (s.apiKey) document.getElementById('setting-api-key').value = s.apiKey;
+    if (s.reminderHour != null || s.reminderMinute != null) {
+      const h = String(s.reminderHour ?? 10).padStart(2, '0');
+      const m = String(s.reminderMinute ?? 0).padStart(2, '0');
+      document.getElementById('setting-time').value = `${h}:${m}`;
+    }
     if (s.aiProvider && s.aiProvider !== 'none') {
       document.getElementById('setting-api-key').classList.remove('hidden');
     }
