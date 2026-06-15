@@ -274,11 +274,11 @@ const App = {
     const hoursWheel = document.getElementById('wheel-hours');
     const minutesWheel = document.getElementById('wheel-minutes');
     if (!hoursWheel || !minutesWheel) return;
+    const savedH = this.state.settings.reminderHour ?? 10;
+    const savedM = this.state.settings.reminderMinute ?? 0;
     requestAnimationFrame(() => {
-      const selH = hoursWheel.querySelector('.time-option.selected');
-      const selM = minutesWheel.querySelector('.time-option.selected');
-      if (selH) selH.scrollIntoView({ block: 'center', behavior: 'instant' });
-      if (selM) selM.scrollIntoView({ block: 'center', behavior: 'instant' });
+      hoursWheel.scrollTop = (savedH + 24) * 40;
+      minutesWheel.scrollTop = (savedM + 60) * 40;
     });
   },
 
@@ -313,15 +313,14 @@ const App = {
       }
     }
 
-    const scrollToSelected = (wheel) => {
-      const sel = wheel.querySelector('.time-option.selected');
-      if (sel) {
-        setTimeout(() => sel.scrollIntoView({ block: 'center', behavior: 'instant' }), 50);
-      }
+    const scrollToSaved = (wheel, value) => {
+      requestAnimationFrame(() => {
+        wheel.scrollTop = (value + 24) * 40;
+      });
     };
 
-    scrollToSelected(hoursWheel);
-    scrollToSelected(minutesWheel);
+    scrollToSaved(hoursWheel, savedH);
+    scrollToSaved(minutesWheel, savedM);
 
     const onScroll = (wheel) => {
       const options = wheel.querySelectorAll('.time-option');
