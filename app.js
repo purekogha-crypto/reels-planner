@@ -167,7 +167,10 @@ const App = {
     this.state.history.unshift(idea);
     this.saveLocal();
     const card = document.querySelector(`.idea-card[data-id="${id}"]`);
-    if (card) card.remove();
+    if (card) {
+      card.classList.add('card-saved');
+      setTimeout(() => card.remove(), 400);
+    }
   },
 
   dismissIdea(id) {
@@ -177,7 +180,10 @@ const App = {
     this.state.history.unshift(idea);
     this.saveLocal();
     const card = document.querySelector(`.idea-card[data-id="${id}"]`);
-    if (card) card.remove();
+    if (card) {
+      card.classList.add('card-dismissed');
+      setTimeout(() => card.remove(), 400);
+    }
   },
 
   _removeCard(id) {

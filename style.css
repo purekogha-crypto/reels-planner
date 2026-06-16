@@ -144,6 +144,20 @@ main {
 
 .idea-card:active { transform: scale(0.97); }
 
+.idea-card.card-saved {
+  border: 2.5px solid #2ECC71;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.4s ease;
+}
+
+.idea-card.card-dismissed {
+  border: 2.5px solid #E74C3C;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.4s ease;
+}
+
 .format-badge {
   display: inline-flex;
   align-items: center;
