@@ -85,7 +85,7 @@ const App = {
       if (!btn) return;
       const card = btn.closest('.idea-card');
       if (!card) return;
-      const id = card.dataset.id;
+      const id = Number(card.dataset.id);
       if (btn.dataset.action === 'save') this.saveIdea(id);
       else if (btn.dataset.action === 'dismiss') this.dismissIdea(id);
     });
