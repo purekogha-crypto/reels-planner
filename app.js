@@ -79,6 +79,18 @@ const App = {
     document.getElementById('btn-generate').addEventListener('click', () => this.generateIdeas());
     document.getElementById('btn-refresh').addEventListener('click', () => this.generateIdeas());
     document.getElementById('btn-back-home').addEventListener('click', () => this.showHome());
+
+    document.getElementById('ideas-container').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const card = btn.closest('.idea-card');
+      const id = card ? card.dataset.id : null;
+      if (!id) return;
+      if (btn.dataset.action === 'save') this.saveIdea(id);
+      else if (btn.dataset.action === 'dismiss') this.dismissIdea(id);
+    });
   },
 
   showHome() {
@@ -137,26 +149,18 @@ const App = {
     const container = document.getElementById('ideas-container');
     container.innerHTML = ideas.map(idea => {
       const aiBadge = idea.source === 'ai' ? '<span class="ai-badge">🤖 AI</span>' : '';
+      const id = idea.id;
       return `
-      <div class="idea-card" data-id="${idea.id}">
+      <div class="idea-card" data-id="${id}">
         <div class="format-badge">${idea.format.icon} ${idea.format.name} ${aiBadge}</div>
         <div class="idea-title">${idea.topic}</div>
         ${idea.location ? `<div class="idea-desc">📍 ${idea.location}</div>` : ''}
         <div class="idea-actions">
-          <button class="btn-save" data-action="save" data-id="${idea.id}">Снять!</button>
-          <button class="btn-dismiss" data-action="dismiss" data-id="${idea.id}">Пропустить</button>
+          <button class="btn-save" data-action="save">Снять!</button>
+          <button class="btn-dismiss" data-action="dismiss">Пропустить</button>
         </div>
       </div>`;
     }).join('');
-
-    container.onclick = (e) => {
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-      e.stopPropagation();
-      const id = btn.dataset.id;
-      if (btn.dataset.action === 'save') this.saveIdea(id);
-      else if (btn.dataset.action === 'dismiss') this.dismissIdea(id);
-    };
   },
 
   saveIdea(id) {
