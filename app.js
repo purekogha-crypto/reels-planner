@@ -6,7 +6,8 @@ const App = {
     history: [],
     showingIdeas: false,
     telegramChatId: '',
-    telegramToken: ''
+    telegramToken: '',
+    _nextId: 1
   },
 
   init() {
@@ -21,6 +22,10 @@ const App = {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
+  },
+
+  _nextId() {
+    return 'id_' + Date.now() + '_' + (this.state._nextId++);
   },
 
   loadLocal() {
@@ -132,14 +137,15 @@ const App = {
     const container = document.getElementById('ideas-container');
     container.innerHTML = ideas.map(idea => {
       const aiBadge = idea.source === 'ai' ? '<span class="ai-badge">🤖 AI</span>' : '';
+      const id = String(idea.id);
       return `
-      <div class="idea-card" data-id="${idea.id}">
+      <div class="idea-card" data-id="${id}" onclick="App.openIdeaDetail('${id}')">
         <div class="format-badge">${idea.format.icon} ${idea.format.name} ${aiBadge}</div>
         <div class="idea-title">${idea.topic}</div>
         ${idea.location ? `<div class="idea-desc">📍 ${idea.location}</div>` : ''}
         <div class="idea-actions">
-          <button class="btn-save" onclick="App.saveIdea(${idea.id})">Снять!</button>
-          <button class="btn-dismiss" onclick="App.dismissIdea(${idea.id})">Пропустить</button>
+          <button class="btn-save" onclick="event.stopPropagation(); App.saveIdea('${id}')">Снять!</button>
+          <button class="btn-dismiss" onclick="event.stopPropagation(); App.dismissIdea('${id}')">Пропустить</button>
         </div>
       </div>`;
     }).join('');
@@ -169,7 +175,10 @@ const App = {
     if (card) {
       card.style.opacity = '0';
       card.style.transform = 'scale(0.9)';
+      card.style.transition = 'all 0.2s';
       setTimeout(() => card.remove(), 200);
+    } else {
+      console.warn('Card not found for id:', id);
     }
   },
 

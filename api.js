@@ -65,7 +65,7 @@ const AI = {
     return ideas.map((idea, i) => {
       const fmtId = fmtMap[idea.format?.toLowerCase()] || 'trend';
       return {
-        id: Date.now() + i,
+        id: 'ai_' + Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2,6),
         topic: idea.topic,
         format: { id: fmtId, name: idea.format, icon: iconMap[fmtId] || '🤖', desc: idea.description || '' },
         location: idea.location || '',
