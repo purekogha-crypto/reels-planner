@@ -143,30 +143,32 @@ const App = {
         <div class="idea-title">${idea.topic}</div>
         ${idea.location ? `<div class="idea-desc">📍 ${idea.location}</div>` : ''}
         <div class="idea-actions">
-          <button class="btn-save" onclick="App.saveIdea(${idea.id})">Снять!</button>
-          <button class="btn-dismiss" onclick="App.dismissIdea(${idea.id})">Пропустить</button>
+          <button class="btn-save" onclick="App.saveIdea(this, ${idea.id})">Снять!</button>
+          <button class="btn-dismiss" onclick="App.dismissIdea(this, ${idea.id})">Пропустить</button>
         </div>
       </div>`;
     }).join('');
   },
 
-  saveIdea(id) {
+  saveIdea(btn, id) {
     const idea = this.state.ideas.find(i => i.id === id);
     if (!idea) return;
     idea.status = 'planned';
     this.state.history.unshift(idea);
     this.saveLocal();
     this._syncToTelegram();
-    this._removeCard(id);
+    const card = btn.closest('.idea-card');
+    if (card) card.remove();
   },
 
-  dismissIdea(id) {
+  dismissIdea(btn, id) {
     const idea = this.state.ideas.find(i => i.id === id);
     if (!idea) return;
     idea.status = 'skipped';
     this.state.history.unshift(idea);
     this.saveLocal();
-    this._removeCard(id);
+    const card = btn.closest('.idea-card');
+    if (card) card.remove();
   },
 
   _removeCard(id) {
