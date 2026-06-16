@@ -47,7 +47,7 @@ const AI = {
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
     if (provider === 'gemini') return data.candidates[0].content.parts[0].text;
-    if (provider === 'openai') return data.choices[0].message.content;
+    if (provider === 'openai' || provider === 'groq') return data.choices[0].message.content;
     if (provider === 'claude') return data.content[0].text;
     return '';
   },
