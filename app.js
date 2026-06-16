@@ -85,7 +85,7 @@ const App = {
       if (!btn) return;
       const card = btn.closest('.idea-card');
       if (!card) return;
-      const id = Number(card.dataset.id);
+      const id = card.dataset.id;
       if (btn.dataset.action === 'save') this.saveIdea(id);
       else if (btn.dataset.action === 'dismiss') this.dismissIdea(id);
     });
@@ -161,7 +161,7 @@ const App = {
   },
 
   saveIdea(id) {
-    const idea = this.state.ideas.find(i => i.id === id);
+    const idea = this.state.ideas.find(i => String(i.id) === String(id));
     if (!idea) return;
     idea.status = 'planned';
     this.state.history.unshift(idea);
@@ -174,7 +174,7 @@ const App = {
   },
 
   dismissIdea(id) {
-    const idea = this.state.ideas.find(i => i.id === id);
+    const idea = this.state.ideas.find(i => String(i.id) === String(id));
     if (!idea) return;
     idea.status = 'skipped';
     this.state.history.unshift(idea);
