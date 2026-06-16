@@ -275,30 +275,53 @@ const App = {
   },
 
   markDone(id) {
-    const idea = this.state.history.find(i => i.id === id);
+    const idea = this.state.history.find(i => String(i.id) === String(id));
     if (!idea) return;
     idea.status = 'completed';
     this.saveLocal();
-    this._syncToTelegram();
-    this.renderHistory();
+    const item = document.querySelector(`.history-item[data-id="${id}"]`);
+    if (item) {
+      item.style.transition = 'all 0.3s';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(100px)';
+      setTimeout(() => this.renderHistory(), 300);
+    } else {
+      this.renderHistory();
+    }
     this._showToast('Отмечено как снятое ✓');
   },
 
   markSkipped(id) {
-    const idea = this.state.history.find(i => i.id === id);
+    const idea = this.state.history.find(i => String(i.id) === String(id));
     if (!idea) return;
     idea.status = 'skipped';
     this.saveLocal();
-    this.renderHistory();
+    const item = document.querySelector(`.history-item[data-id="${id}"]`);
+    if (item) {
+      item.style.transition = 'all 0.3s';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(-100px)';
+      setTimeout(() => this.renderHistory(), 300);
+    } else {
+      this.renderHistory();
+    }
     this._showToast('Перемещено в пропущенные');
   },
 
   markRestore(id) {
-    const idea = this.state.history.find(i => i.id === id);
+    const idea = this.state.history.find(i => String(i.id) === String(id));
     if (!idea) return;
     idea.status = 'planned';
     this.saveLocal();
-    this.renderHistory();
+    const item = document.querySelector(`.history-item[data-id="${id}"]`);
+    if (item) {
+      item.style.transition = 'all 0.3s';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(-100px)';
+      setTimeout(() => this.renderHistory(), 300);
+    } else {
+      this.renderHistory();
+    }
     this._showToast('Возвращено в запланированные');
   },
 
