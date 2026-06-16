@@ -198,17 +198,14 @@ main {
 
 .btn-save, .btn-dismiss {
   flex: 1;
-  padding: 10px 4px;
+  padding: 6px 4px;
   border: none;
   border-radius: 7px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
   transition: opacity 0.15s;
-  position: relative;
-  z-index: 5;
 }
 
 .btn-save { background: var(--accent); color: #fff; }
