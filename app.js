@@ -156,7 +156,6 @@ const App = {
     idea.status = 'planned';
     this.state.history.unshift(idea);
     this.saveLocal();
-    this._syncToTelegram();
     const card = btn.closest('.idea-card');
     if (card) card.remove();
   },
