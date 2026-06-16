@@ -137,18 +137,26 @@ const App = {
     const container = document.getElementById('ideas-container');
     container.innerHTML = ideas.map(idea => {
       const aiBadge = idea.source === 'ai' ? '<span class="ai-badge">🤖 AI</span>' : '';
-      const id = String(idea.id);
       return `
-      <div class="idea-card" data-id="${id}" onclick="App.openIdeaDetail('${id}')">
+      <div class="idea-card" data-id="${idea.id}">
         <div class="format-badge">${idea.format.icon} ${idea.format.name} ${aiBadge}</div>
         <div class="idea-title">${idea.topic}</div>
         ${idea.location ? `<div class="idea-desc">📍 ${idea.location}</div>` : ''}
         <div class="idea-actions">
-          <button class="btn-save" onclick="event.stopPropagation(); App.saveIdea('${id}')">Снять!</button>
-          <button class="btn-dismiss" onclick="event.stopPropagation(); App.dismissIdea('${id}')">Пропустить</button>
+          <button class="btn-save" data-action="save" data-id="${idea.id}">Снять!</button>
+          <button class="btn-dismiss" data-action="dismiss" data-id="${idea.id}">Пропустить</button>
         </div>
       </div>`;
     }).join('');
+
+    container.onclick = (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      if (btn.dataset.action === 'save') this.saveIdea(id);
+      else if (btn.dataset.action === 'dismiss') this.dismissIdea(id);
+    };
   },
 
   saveIdea(id) {
