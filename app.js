@@ -283,7 +283,7 @@ const App = {
     if (item) {
       item.style.transition = 'all 0.3s';
       item.style.opacity = '0';
-      item.style.transform = 'translateX(100px)';
+      item.style.transform = 'translateX(-100px)';
       setTimeout(() => this.renderHistory(), 300);
     } else {
       this.renderHistory();
@@ -300,7 +300,7 @@ const App = {
     if (item) {
       item.style.transition = 'all 0.3s';
       item.style.opacity = '0';
-      item.style.transform = 'translateX(-100px)';
+      item.style.transform = 'translateX(100px)';
       setTimeout(() => this.renderHistory(), 300);
     } else {
       this.renderHistory();
