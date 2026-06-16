@@ -82,11 +82,13 @@ const App = {
 
     document.getElementById('ideas-container').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
+      console.log('Click event:', e.target, btn);
       if (!btn) return;
       e.preventDefault();
       e.stopPropagation();
       const card = btn.closest('.idea-card');
       const id = card ? card.dataset.id : null;
+      console.log('Action:', btn.dataset.action, 'ID:', id);
       if (!id) return;
       if (btn.dataset.action === 'save') this.saveIdea(id);
       else if (btn.dataset.action === 'dismiss') this.dismissIdea(id);
@@ -149,9 +151,8 @@ const App = {
     const container = document.getElementById('ideas-container');
     container.innerHTML = ideas.map(idea => {
       const aiBadge = idea.source === 'ai' ? '<span class="ai-badge">🤖 AI</span>' : '';
-      const id = idea.id;
       return `
-      <div class="idea-card" data-id="${id}">
+      <div class="idea-card" data-id="${idea.id}">
         <div class="format-badge">${idea.format.icon} ${idea.format.name} ${aiBadge}</div>
         <div class="idea-title">${idea.topic}</div>
         ${idea.location ? `<div class="idea-desc">📍 ${idea.location}</div>` : ''}
