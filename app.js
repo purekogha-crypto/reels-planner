@@ -135,7 +135,7 @@ const App = {
       ideas = ideas.concat(dbIdeas);
     }
 
-    this.state.ideas = ideas;
+    this.state.ideas = ideas.slice(0, 4);
     this.state.showingIdeas = true;
     this.renderIdeas(ideas);
     document.getElementById('btn-generate').style.display = 'none';
@@ -166,9 +166,22 @@ const App = {
     idea.status = 'planned';
     this.state.history.unshift(idea);
     this.saveLocal();
-    const card = document.querySelector(`.idea-card[data-id="${id}"]`);
+    const card = document.querySelector(`.idea-card[data-id="${CSS.escape(id)}"]`);
     if (card) {
       card.classList.add('card-saved');
+      setTimeout(() => card.remove(), 400);
+    }
+  },
+
+  dismissIdea(id) {
+    const idea = this.state.ideas.find(i => String(i.id) === String(id));
+    if (!idea) return;
+    idea.status = 'skipped';
+    this.state.history.unshift(idea);
+    this.saveLocal();
+    const card = document.querySelector(`.idea-card[data-id="${CSS.escape(id)}"]`);
+    if (card) {
+      card.classList.add('card-dismissed');
       setTimeout(() => card.remove(), 400);
     }
   },
