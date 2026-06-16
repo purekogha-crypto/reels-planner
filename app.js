@@ -79,6 +79,16 @@ const App = {
     document.getElementById('btn-generate').addEventListener('click', () => this.generateIdeas());
     document.getElementById('btn-refresh').addEventListener('click', () => this.generateIdeas());
     document.getElementById('btn-back-home').addEventListener('click', () => this.showHome());
+
+    document.getElementById('ideas-container').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const card = btn.closest('.idea-card');
+      if (!card) return;
+      const id = card.dataset.id;
+      if (btn.dataset.action === 'save') this.saveIdea(id);
+      else if (btn.dataset.action === 'dismiss') this.dismissIdea(id);
+    });
   },
 
   showHome() {
@@ -143,30 +153,30 @@ const App = {
         <div class="idea-title">${idea.topic}</div>
         ${idea.location ? `<div class="idea-desc">📍 ${idea.location}</div>` : ''}
         <div class="idea-actions">
-          <button class="btn-save" onclick="App.saveIdea(this, ${idea.id})">Снять!</button>
-          <button class="btn-dismiss" onclick="App.dismissIdea(this, ${idea.id})">Пропустить</button>
+          <button class="btn-save" data-action="save">Снять!</button>
+          <button class="btn-dismiss" data-action="dismiss">Пропустить</button>
         </div>
       </div>`;
     }).join('');
   },
 
-  saveIdea(btn, id) {
+  saveIdea(id) {
     const idea = this.state.ideas.find(i => i.id === id);
     if (!idea) return;
     idea.status = 'planned';
     this.state.history.unshift(idea);
     this.saveLocal();
-    const card = btn.closest('.idea-card');
+    const card = document.querySelector(`.idea-card[data-id="${id}"]`);
     if (card) card.remove();
   },
 
-  dismissIdea(btn, id) {
+  dismissIdea(id) {
     const idea = this.state.ideas.find(i => i.id === id);
     if (!idea) return;
     idea.status = 'skipped';
     this.state.history.unshift(idea);
     this.saveLocal();
-    const card = btn.closest('.idea-card');
+    const card = document.querySelector(`.idea-card[data-id="${id}"]`);
     if (card) card.remove();
   },
 
